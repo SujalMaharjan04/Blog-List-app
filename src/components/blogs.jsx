@@ -17,16 +17,16 @@ const Blog = ({blog, updateBlog, deleteBlog, user}) => {
     }
     const handleLike = () => {
         updateBlog({
-            title: blog.title,
-            author: blog.author,
-            url: blog.url,
+            ...blog,
             likes: blog.likes + 1
         })
     }
 
     const handleDelete = () => {
-        window.confirm(`Are you sure you want to delete blog ${blog.title}`)
-        deleteBlog(blog.id)
+        if (window.confirm(`Are you sure you want to delete blog ${blog.title}`)) {
+            deleteBlog(blog.id)
+        }
+        
     }
     
     return (
@@ -38,7 +38,10 @@ const Blog = ({blog, updateBlog, deleteBlog, user}) => {
                     <div>url: {blog.url}</div>
                     <div>likes: {blog.likes}<button onClick={handleLike}>like</button></div>
                     <div>author: {blog.author}</div>
-                    {user && blog.user && user.username === blog.user.username && (
+                    {console.log('blog.user.username', blog.user.username)}
+                     {console.log('user.username', user.username)}
+                     {console.log(`user: ${user} blog.user = ${blog.user} user.username === blog.user.username =${user.username === blog.user.username}`)}
+                        {user && blog.user && user.username === blog.user.username && (
                         <div><button onClick={handleDelete}>Delete</button></div>
                     )}
                     
