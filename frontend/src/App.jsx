@@ -7,13 +7,15 @@ import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { setNotification, clearNotification } from './reducers/notificationreducer'
+import {setBlog} from './reducers/blogReducer'
 
 
 const App = () => {
   const dispatch = useDispatch()
   const notification = useSelector(state => state.notification)
+  const blogs = useSelector(state => state.blog)
+  
 
-  const [blogs, setBlog] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -28,7 +30,7 @@ const App = () => {
   useEffect(() => {
     blogService
       .getAll()
-      .then(blogs => setBlog(blogs))
+      .then(blogs => dispatch(setBlog(blogs)))
   }, [])
 
   useEffect(() => {
@@ -92,9 +94,7 @@ const App = () => {
   const handleBlog = async (newObject) => {
     try {
       const result = await blogService.create(newObject)
-      setBlog(blogs.concat(result))
-      console.log('response',result)
-      console.log('blog.user', result.user)
+      dispatch(addBlog(result))
       notify(`A new blog ${result.title} by ${result.author} added`, 'success')
     }
     catch  {
