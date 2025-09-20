@@ -7,7 +7,7 @@ import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { setNotification, clearNotification } from './reducers/notificationreducer'
-import {setBlog} from './reducers/blogReducer'
+import {addBlog, updatedBlog, newBlog} from './reducers/blogReducer'
 
 
 const App = () => {
@@ -30,7 +30,7 @@ const App = () => {
   useEffect(() => {
     blogService
       .getAll()
-      .then(blogs => dispatch(setBlog(blogs)))
+      .then(blogs => dispatch(newBlog(blogs)))
   }, [])
 
   useEffect(() => {
@@ -44,9 +44,10 @@ const App = () => {
 
   const update = async (newObject) => {
     try {
-      const blog = blogs.find(blog => blog.title === newObject.title)
-      const result = await blogService.update(newObject, blog.id)
-      setBlog(blogs.map(blog => blog.title === newObject.title ? result : blog))
+      const result = await blogService.update(newObject.id, newObject)
+      
+      dispatch(updatedBlog(result))
+      notify('Update Successful', 'success')
     }
     catch  {
      notify('Update Failed', 'error')
