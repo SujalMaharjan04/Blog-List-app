@@ -8,17 +8,18 @@ import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { setNotification, clearNotification } from './reducers/notificationreducer'
 import {addBlog, updatedBlog, newBlog, removeBlog} from './reducers/blogReducer'
+import { setUser } from './reducers/userReducer'
 
 
 const App = () => {
   const dispatch = useDispatch()
   const notification = useSelector(state => state.notification)
   const blogs = useSelector(state => state.blog)
+  const user = useSelector(state => state.user)
   
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
 
   const notify = (text, type) => {
     dispatch(setNotification({text, type}))
@@ -30,7 +31,7 @@ const App = () => {
   useEffect(() => {
     blogService
       .getAll()
-      .then(blogs => {console.log(blogs) 
+      .then(blogs => {
         dispatch(newBlog(blogs))})
   }, [])
 
@@ -39,7 +40,7 @@ const App = () => {
     if (loggedJSON) {
       const user = JSON.parse(loggedJSON)
       blogService.setToken(user.token)
-      setUser(user)
+      dispatch(setUser(user))
     } 
   }, [])
 
@@ -77,7 +78,7 @@ const App = () => {
       window.localStorage.setItem(
         'loginBlogAppUser', JSON.stringify(user))
       blogService.setToken(user.token)
-      setUser(user)
+      dispatch(setUser(user))
       setUsername('')
       setPassword('')
       notify('You have successfully logged in', 'success')
@@ -89,7 +90,7 @@ const App = () => {
 
   const handleLogout = () => {
     window.localStorage.removeItem('loginBlogAppUser')
-    setUser(null)
+    dispatch(setUser(null))
     notify('Logged Out', 'success')
   }
 
@@ -123,7 +124,6 @@ const App = () => {
         </Togglable>
         
         <ul>
-          {console.log(blogs)}
           {blogs
             .slice()
             .sort((a, b) => b.likes - a.likes)
