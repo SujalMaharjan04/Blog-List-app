@@ -5,14 +5,18 @@ import login from './services/login'
 import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
-import { getAll } from './request'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useContext } from 'react'
 import NotificationContext from './NotificationContext'
 
 const App = () => {
+
+  const query = useQueryClient()
   const [notification, dispatch] = useContext(NotificationContext)
-  const [blogs, setBlog] = useState([])
+  const newBlog = useMutation({
+    mutationFn: blogService.create,
+    onSuccess: query.invalidateQueries({queryKey: ['blog']})
+  })
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -30,9 +34,14 @@ const App = () => {
     }, 5000)
   }
 
-  useEffect(() => {
-     blogService.getAll().then(blogs => setBlog(blogs))
-  }, [])
+ 
+  const result = useQuery({
+    queryKey: ['blog'],
+    queryFn: blogService.getAll
+  })
+
+
+  const blogs = result.data ?? []
 
   useEffect(() => {
     const loggedJSON = window.localStorage.getItem('loginBlogAppUser')
@@ -95,11 +104,8 @@ const App = () => {
 
   const handleBlog = async (newObject) => {
     try {
-      const result = await blogService.create(newObject)
-      setBlog(blogs.concat(result))
-      console.log('response',result)
-      console.log('blog.user', result.user)
-      notify(`A new blog ${result.title} by ${result.author} added`,  'success')
+      newBlog.mutate(newObject)
+      notify(`A new blog ${newObject.title} by ${newObject.author} added`,  'success')
       
     }
     catch  {
@@ -126,7 +132,7 @@ const App = () => {
             createBlog={handleBlog}
             updateBlog = {update} />
         </Togglable>
-        
+        {result.isLoading && <div>Loading....</div>}
         <ul>
           {blogs
             .slice()
