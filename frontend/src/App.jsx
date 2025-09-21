@@ -5,18 +5,33 @@ import login from './services/login'
 import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
+import { getAll } from './request'
+import { useQuery } from '@tanstack/react-query'
+import { useContext } from 'react'
+import NotificationContext from './NotificationContext'
 
 const App = () => {
+  const [notification, dispatch] = useContext(NotificationContext)
   const [blogs, setBlog] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState({text: null, type: null})
+
+  const notify = (text, type) => {
+    dispatch({
+      type: 'SET_NOTIFICATION',
+      payload: {text, type}
+    })
+
+    setTimeout(() => {
+      dispatch({
+        type: 'CLEAR_NOTIFICATION',
+      })
+    }, 5000)
+  }
 
   useEffect(() => {
-    blogService
-      .getAll()
-      .then(blogs => setBlog(blogs))
+     blogService.getAll().then(blogs => setBlog(blogs))
   }, [])
 
   useEffect(() => {
@@ -33,12 +48,10 @@ const App = () => {
       const blog = blogs.find(blog => blog.title === newObject.title)
       const result = await blogService.update(newObject, blog.id)
       setBlog(blogs.map(blog => blog.title === newObject.title ? result : blog))
+      notify( 'Update Successful',  'success')
     }
     catch  {
-      setErrorMessage({text: 'Update Failed', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text:null, type: null})
-      }, 5000)
+      notify( 'Update Failed',  'error')
     } 
   }
 
@@ -46,16 +59,10 @@ const App = () => {
     try {
       await blogService.deleteBlog(id)
       setBlog(blogs.filter(blog => blog.id !== id))
-      setErrorMessage({text: 'Delete Successful', type: 'success'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify( 'Delete Successful',  'success')
     }
     catch  {
-      setErrorMessage({text: 'Delete Unsuccessful', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify( 'Delete Failed',  'error')
     }
   }
 
@@ -73,26 +80,17 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
-      setErrorMessage({text: 'You have successfully logged in', type: 'success'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify('You have successfully logged in',  'success')
     }
     catch  {
-      setErrorMessage({text: 'Login Unsuccessful', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify('Login Failed',  'error')
     }
   } 
 
   const handleLogout = () => {
     window.localStorage.removeItem('loginBlogAppUser')
     setUser(null)
-    setErrorMessage({text: 'Logged Out', type: 'success'})
-    setTimeout(() => {
-        setErrorMessage({ext: null, type: null})
-      }, 5000)
+    notify( 'Logout successful',  'success')
   }
 
   const handleBlog = async (newObject) => {
@@ -101,16 +99,12 @@ const App = () => {
       setBlog(blogs.concat(result))
       console.log('response',result)
       console.log('blog.user', result.user)
-      setErrorMessage({text:`A new blog ${result.title} by ${result.author} added`, type: 'success'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify(`A new blog ${result.title} by ${result.author} added`,  'success')
+      
     }
     catch  {
-      setErrorMessage({text: 'Addition of BLog unsuccessful', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify( 'Addition of BLog unsuccessful',  'error')
+      
     }
   }
 
@@ -119,7 +113,8 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      {errorMessage === null ? null : <h2 className = {errorMessage.type}>{errorMessage.text}</h2>}
+      
+      {notification === null ? null : <h2 className = {notification.type}>{notification.text}</h2>}
       {user === null
         ? <Togglable buttonLabel = "login" >
             <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} /> 
