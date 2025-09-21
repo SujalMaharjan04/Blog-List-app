@@ -1,6 +1,6 @@
 const blogRouter = require('express').Router()
 const { rearg } = require('lodash')
-const blog = require('../models/blog')
+const blog = require('../models/blogs')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 const { userExtractor } = require('../utils/middleware')
