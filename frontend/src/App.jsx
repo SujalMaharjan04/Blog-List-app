@@ -7,7 +7,7 @@ import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { setNotification, clearNotification } from './reducers/notificationreducer'
-import {addBlog, updatedBlog, newBlog} from './reducers/blogReducer'
+import {addBlog, updatedBlog, newBlog, removeBlog} from './reducers/blogReducer'
 
 
 const App = () => {
@@ -30,7 +30,8 @@ const App = () => {
   useEffect(() => {
     blogService
       .getAll()
-      .then(blogs => dispatch(newBlog(blogs)))
+      .then(blogs => {console.log(blogs) 
+        dispatch(newBlog(blogs))})
   }, [])
 
   useEffect(() => {
@@ -57,7 +58,7 @@ const App = () => {
   const deleteBlog = async(id) => {
     try {
       await blogService.deleteBlog(id)
-      setBlog(blogs.filter(blog => blog.id !== id))
+      dispatch(removeBlog(id))
       notify('Delete Successful', 'success')
     }
     catch  {
@@ -122,11 +123,12 @@ const App = () => {
         </Togglable>
         
         <ul>
+          {console.log(blogs)}
           {blogs
             .slice()
             .sort((a, b) => b.likes - a.likes)
             .map(blog => 
-          <Blog key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
+          <Blog key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user} blogUser = {blog.user}/>
           )}
         </ul>
       </div>}

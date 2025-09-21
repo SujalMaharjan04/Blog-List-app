@@ -1,7 +1,7 @@
 import {useState} from 'react'
 
 
-const Blog = ({blog, updateBlog, deleteBlog, user}) => {
+const Blog = ({blog, updateBlog, deleteBlog, user, blogUser}) => {
     const [view, setView] = useState(false)
 
     const blogStyle = {
@@ -38,7 +38,8 @@ const Blog = ({blog, updateBlog, deleteBlog, user}) => {
                     <div>url: {blog.url}</div>
                     <div>likes: {blog.likes}<button onClick={handleLike}>like</button></div>
                     <div>author: {blog.author}</div>
-                        {user && blog.user && user.username === blog.user.username && (
+                        {console.log('blog.user', blog.user)}
+                        {user && blogUser && user.username === blogUser.username && (
                         <div><button onClick={handleDelete}>Delete</button></div>
                     )}
                     
