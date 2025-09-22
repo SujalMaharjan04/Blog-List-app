@@ -12,9 +12,20 @@ const notificationReducer = (state, action) => {
     }
 }
 
+const userReducer = (state, action) => {
+    switch(action.type) {
+        case 'SET_USER':
+            return action.payload
+        case 'CLEAR_USER':
+            return null
+        default: 
+            return state
+    }
+}
 
 
 
+export const UserContext = createContext()
 export const NotificationContext = createContext()
 
 
@@ -25,6 +36,16 @@ export const NotificationContextProvider = (props) => {
         <NotificationContext.Provider value = {[notification, dispatchNotification]}>
             {props.children}
         </NotificationContext.Provider>
+    )
+}
+
+export const UserContextProvider = (props) => {
+    const [user, dispatchUser] = useReducer(userReducer, null)
+
+    return (
+        <UserContext.Provider value = {[user, dispatchUser]}>
+            {props.children}
+        </UserContext.Provider>
     )
 }
 

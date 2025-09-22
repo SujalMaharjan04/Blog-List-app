@@ -7,12 +7,14 @@ import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useContext } from 'react'
-import {NotificationContext} from './context'
+import {NotificationContext, UserContext} from './context'
 
 const App = () => {
 
   const query = useQueryClient()
+  //Context 
   const [notification, dispatch] = useContext(NotificationContext)
+  const [user, dispatchUser] = useContext(UserContext)
 
   //React Query for New Blog
   const newBlog = useMutation({
@@ -20,16 +22,16 @@ const App = () => {
     onSuccess: query.invalidateQueries({queryKey: ['blog']}),
   })
 
-  //Update Blog for Likes
+  //Mutate Update Blog for Likes
   const updateBlog = useMutation({
     mutationFn: ({newObject, id}) => blogService.update(newObject, id),
-    onSuccess: query.invalidateQueries({queryKey: ['blog']}),
+    onSuccess: () => query.invalidateQueries({queryKey: ['blog']}),
 
     onMutate: async({newObject, id}) => {
       const previousBlog = query.getQueryData(['blog'])
 
       query.setQueryData(['blog'], (old) => {
-        old.map(blog => blog.id === id ? {...blog, newObject} : blog)
+         old.map(blog => blog.id === id ? {...blog, newObject} : blog)
       })
 
       return {previousBlog}
@@ -39,12 +41,12 @@ const App = () => {
   //Delete Blog Query
   const Delete = useMutation({
     mutationFn: ({id}) => blogService.deleteBlog(id),
-    onSuccess: query.invalidateQueries({queryKey: ['blog']})
+    onSuccess: () => query.invalidateQueries({queryKey: ['blog']})
   })
   
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
+  
 
   //Notification function
   const notify = (text, type) => {
@@ -58,6 +60,14 @@ const App = () => {
         type: 'CLEAR_NOTIFICATION',
       })
     }, 5000)
+  }
+
+  //User dispatch Function
+  const setUser = (user) => {
+    dispatchUser({
+      type: 'SET_USER',
+      payload: user
+    })
   }
 
   //Query for getting the blogs
