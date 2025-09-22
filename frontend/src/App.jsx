@@ -14,8 +14,15 @@ const App = () => {
   const query = useQueryClient()
   const [notification, dispatch] = useContext(NotificationContext)
 
+  //React Query for New Blog
   const newBlog = useMutation({
     mutationFn: blogService.create,
+    onSuccess: query.invalidateQueries({queryKey: ['blog']}),
+  })
+
+  //Update Blog for Likes
+  const updateBlog = useMutation({
+    mutationFn: ({newObject, id}) => blogService.update(newObject, id),
     onSuccess: query.invalidateQueries({queryKey: ['blog']}),
 
     onMutate: async({newObject, id}) => {
@@ -29,8 +36,9 @@ const App = () => {
     }
   })
 
-  const updateBlog = useMutation({
-    mutationFn: ({newObject, id}) => blogService.update(newObject, id),
+  //Delete Blog Query
+  const Delete = useMutation({
+    mutationFn: ({id}) => blogService.deleteBlog(id),
     onSuccess: query.invalidateQueries({queryKey: ['blog']})
   })
   
@@ -38,6 +46,7 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
+  //Notification function
   const notify = (text, type) => {
     dispatch({
       type: 'SET_NOTIFICATION',
@@ -51,7 +60,7 @@ const App = () => {
     }, 5000)
   }
 
- 
+  //Query for getting the blogs
   const result = useQuery({
     queryKey: ['blog'],
     queryFn: blogService.getAll
@@ -69,6 +78,7 @@ const App = () => {
     } 
   }, [])
 
+  //Function to update blog for likes
   const update = async (newObject) => {
     try {
       const blog = blogs.find(blog => blog.title === newObject.title)
@@ -80,10 +90,10 @@ const App = () => {
     } 
   }
 
+  //Function to delete a blog
   const deleteBlog = async(id) => {
     try {
-      await blogService.deleteBlog(id)
-      setBlog(blogs.filter(blog => blog.id !== id))
+      Delete.mutate({id})
       notify( 'Delete Successful',  'success')
     }
     catch  {
