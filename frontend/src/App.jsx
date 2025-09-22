@@ -7,16 +7,33 @@ import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useContext } from 'react'
-import NotificationContext from './NotificationContext'
+import {NotificationContext} from './context'
 
 const App = () => {
 
   const query = useQueryClient()
   const [notification, dispatch] = useContext(NotificationContext)
+
   const newBlog = useMutation({
     mutationFn: blogService.create,
+    onSuccess: query.invalidateQueries({queryKey: ['blog']}),
+
+    onMutate: async({newObject, id}) => {
+      const previousBlog = query.getQueryData(['blog'])
+
+      query.setQueryData(['blog'], (old) => {
+        old.map(blog => blog.id === id ? {...blog, newObject} : blog)
+      })
+
+      return {previousBlog}
+    }
+  })
+
+  const updateBlog = useMutation({
+    mutationFn: ({newObject, id}) => blogService.update(newObject, id),
     onSuccess: query.invalidateQueries({queryKey: ['blog']})
   })
+  
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -55,8 +72,7 @@ const App = () => {
   const update = async (newObject) => {
     try {
       const blog = blogs.find(blog => blog.title === newObject.title)
-      const result = await blogService.update(newObject, blog.id)
-      setBlog(blogs.map(blog => blog.title === newObject.title ? result : blog))
+      updateBlog.mutate({newObject, id: blog.id})
       notify( 'Update Successful',  'success')
     }
     catch  {

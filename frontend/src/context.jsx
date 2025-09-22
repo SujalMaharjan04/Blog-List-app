@@ -14,7 +14,9 @@ const notificationReducer = (state, action) => {
 
 
 
-const NotificationContext = createContext()
+
+export const NotificationContext = createContext()
+
 
 export const NotificationContextProvider = (props) => {
     const [notification, dispatchNotification] = useReducer(notificationReducer, {text: null, type: null})
@@ -26,4 +28,3 @@ export const NotificationContextProvider = (props) => {
     )
 }
 
-export default NotificationContext
