@@ -5,19 +5,79 @@ import login from './services/login'
 import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useContext } from 'react'
+import {NotificationContext, UserContext} from './context'
 
 const App = () => {
-  const [blogs, setBlog] = useState([])
+
+  const query = useQueryClient()
+  //Context 
+  const [notification, dispatch] = useContext(NotificationContext)
+  const [user, dispatchUser] = useContext(UserContext)
+
+  //React Query for New Blog
+  const newBlog = useMutation({
+    mutationFn: blogService.create,
+    onSuccess: query.invalidateQueries({queryKey: ['blog']}),
+  })
+
+  //Mutate Update Blog for Likes
+  const updateBlog = useMutation({
+    mutationFn: ({newObject, id}) => blogService.update(newObject, id),
+    onSuccess: () => query.invalidateQueries({queryKey: ['blog']}),
+
+    onMutate: async({newObject, id}) => {
+      const previousBlog = query.getQueryData(['blog'])
+
+      query.setQueryData(['blog'], (old) => {
+         old.map(blog => blog.id === id ? {...blog, newObject} : blog)
+      })
+
+      return {previousBlog}
+    }
+  })
+
+  //Delete Blog Query
+  const Delete = useMutation({
+    mutationFn: ({id}) => blogService.deleteBlog(id),
+    onSuccess: () => query.invalidateQueries({queryKey: ['blog']})
+  })
+  
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState({text: null, type: null})
+  
 
-  useEffect(() => {
-    blogService
-      .getAll()
-      .then(blogs => setBlog(blogs))
-  }, [])
+  //Notification function
+  const notify = (text, type) => {
+    dispatch({
+      type: 'SET_NOTIFICATION',
+      payload: {text, type}
+    })
+
+    setTimeout(() => {
+      dispatch({
+        type: 'CLEAR_NOTIFICATION',
+      })
+    }, 5000)
+  }
+
+  //User dispatch Function
+  const setUser = (user) => {
+    dispatchUser({
+      type: 'SET_USER',
+      payload: user
+    })
+  }
+
+  //Query for getting the blogs
+  const result = useQuery({
+    queryKey: ['blog'],
+    queryFn: blogService.getAll
+  })
+
+
+  const blogs = result.data ?? []
 
   useEffect(() => {
     const loggedJSON = window.localStorage.getItem('loginBlogAppUser')
@@ -28,34 +88,26 @@ const App = () => {
     } 
   }, [])
 
+  //Function to update blog for likes
   const update = async (newObject) => {
     try {
       const blog = blogs.find(blog => blog.title === newObject.title)
-      const result = await blogService.update(newObject, blog.id)
-      setBlog(blogs.map(blog => blog.title === newObject.title ? result : blog))
+      updateBlog.mutate({newObject, id: blog.id})
+      notify( 'Update Successful',  'success')
     }
     catch  {
-      setErrorMessage({text: 'Update Failed', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text:null, type: null})
-      }, 5000)
+      notify( 'Update Failed',  'error')
     } 
   }
 
+  //Function to delete a blog
   const deleteBlog = async(id) => {
     try {
-      await blogService.deleteBlog(id)
-      setBlog(blogs.filter(blog => blog.id !== id))
-      setErrorMessage({text: 'Delete Successful', type: 'success'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      Delete.mutate({id})
+      notify( 'Delete Successful',  'success')
     }
     catch  {
-      setErrorMessage({text: 'Delete Unsuccessful', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify( 'Delete Failed',  'error')
     }
   }
 
@@ -73,44 +125,28 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
-      setErrorMessage({text: 'You have successfully logged in', type: 'success'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify('You have successfully logged in',  'success')
     }
     catch  {
-      setErrorMessage({text: 'Login Unsuccessful', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify('Login Failed',  'error')
     }
   } 
 
   const handleLogout = () => {
     window.localStorage.removeItem('loginBlogAppUser')
     setUser(null)
-    setErrorMessage({text: 'Logged Out', type: 'success'})
-    setTimeout(() => {
-        setErrorMessage({ext: null, type: null})
-      }, 5000)
+    notify( 'Logout successful',  'success')
   }
 
   const handleBlog = async (newObject) => {
     try {
-      const result = await blogService.create(newObject)
-      setBlog(blogs.concat(result))
-      console.log('response',result)
-      console.log('blog.user', result.user)
-      setErrorMessage({text:`A new blog ${result.title} by ${result.author} added`, type: 'success'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      newBlog.mutate(newObject)
+      notify(`A new blog ${newObject.title} by ${newObject.author} added`,  'success')
+      
     }
     catch  {
-      setErrorMessage({text: 'Addition of BLog unsuccessful', type: 'error'})
-      setTimeout(() => {
-        setErrorMessage({text: null, type: null})
-      }, 5000)
+      notify( 'Addition of BLog unsuccessful',  'error')
+      
     }
   }
 
@@ -119,7 +155,8 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      {errorMessage === null ? null : <h2 className = {errorMessage.type}>{errorMessage.text}</h2>}
+      
+      {notification === null ? null : <h2 className = {notification.type}>{notification.text}</h2>}
       {user === null
         ? <Togglable buttonLabel = "login" >
             <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} /> 
@@ -131,7 +168,7 @@ const App = () => {
             createBlog={handleBlog}
             updateBlog = {update} />
         </Togglable>
-        
+        {result.isLoading && <div>Loading....</div>}
         <ul>
           {blogs
             .slice()
