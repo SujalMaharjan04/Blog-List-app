@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react'
 import blogService from './services/blog'
-import Blog from './components/blogs'
+import Blogs from './components/Blogs'
 import login from './services/login'
 import LoginForm from './components/loginform'
 import Togglable from './components/Togglable'
@@ -11,6 +11,7 @@ import {NotificationContext, UserContext} from './context'
 import { Routes, Route, Link, useNavigation, useMatch } from 'react-router-dom'
 import Users from './components/Users'
 import User from './components/User'
+import Blog from './components/Blog'
 
 const App = () => {
 
@@ -188,7 +189,7 @@ const App = () => {
                 .slice()
                 .sort((a, b) => b.likes - a.likes)
                 .map(blog => 
-              <Blog key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
+              <Blogs key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
               )}
             </ul>
         </div>
@@ -198,6 +199,9 @@ const App = () => {
         } />
         <Route path = "/user/:id" element = {
           <User />
+        } />
+        <Route path = "/blog/:id" element = {
+          <Blog updateBlog = {update} deleteBlog = {deleteBlog}/>
         } />
       </Routes>
     </div>

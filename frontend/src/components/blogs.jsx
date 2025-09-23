@@ -1,7 +1,8 @@
 import {useState} from 'react'
+import { Link } from 'react-router-dom'
 
 
-const Blog = ({blog, updateBlog, deleteBlog, user}) => {
+const Blogs = ({blog, updateBlog, deleteBlog, user}) => {
     const [view, setView] = useState(false)
 
     const blogStyle = {
@@ -11,45 +12,20 @@ const Blog = ({blog, updateBlog, deleteBlog, user}) => {
         width: "20%"
     }
     
-    const handleView = () => {
-        setView(!view)
-        
-    }
-    const handleLike = () => {
-        updateBlog({
-            ...blog,
-            likes: blog.likes + 1
-        })
-    }
+   
 
-    const handleDelete = () => {
-        if (window.confirm(`Are you sure you want to delete blog ${blog.title}`)) {
-            deleteBlog(blog.id)
-        }
-        
-    }
+    
     
     return (
         <>
             <li>
-                {view 
-                ? <div style = {blogStyle} className='blog'>
-                    <div>{blog.title}<button onClick={handleView}>Hide</button></div>
-                    <div>url: {blog.url}</div>
-                    <div>likes: {blog.likes}<button onClick={handleLike}>like</button></div>
-                    <div>author: {blog.author}</div>
-                        {user && blog.user && user.username === blog.user.username && (
-                        <div><button onClick={handleDelete}>Delete</button></div>
-                    )}
-                    
-                </div>
-                : <div style = {blogStyle} className='blog'>
-                    <div className = "title">{blog.title} by {blog.author}<button onClick={handleView}>View More</button></div>  
-                  </div>}
+                 <div style = {blogStyle} className='blog'>
+                    <div className = "title"><Link to = {`/blog/${blog.id}`}>{blog.title}</Link> by {blog.author}</div>  
+                  </div>
             </li>
             
         </>
     )
 }
 
-export default Blog
+export default Blogs
