@@ -160,6 +160,14 @@ const App = () => {
 
   
 
+  const background = {
+    backgroundColor: "gray",
+    display: "flex",
+    alignItems: 'center',
+    gap: '1rem',
+    padding: '1rem'
+  }
+
 
 
   return (
@@ -167,11 +175,16 @@ const App = () => {
       <h2>blogs</h2>
       
       {notification === null ? null : <h2 className = {notification.type}>{notification.text}</h2>}
-      {user === null
-        ? <Togglable buttonLabel = "login" >
-            <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} /> 
-          </Togglable> : <div>{user.username} Logged In <button type = "submit" onClick={handleLogout} >Log Out</button></div>
-      }
+      <div style={background}>
+        <Link to = "/">Home</Link>
+        <Link to = "/blog">blogs</Link>
+        <Link to = '/user'>users</Link>
+        {user === null
+          ? <Togglable buttonLabel = "login" >
+              <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} /> 
+            </Togglable> : <div>{user.username} Logged In <button type = "submit" onClick={handleLogout} >Log Out</button></div>
+        }
+      </div>
       
       {/* Different Routes */}
       <Routes>
@@ -202,6 +215,16 @@ const App = () => {
         } />
         <Route path = "/blog/:id" element = {
           <Blog updateBlog = {update} deleteBlog = {deleteBlog}/>
+        } />
+        <Route path = "/blog" element = {
+          <ul>
+              {blogs
+                .slice()
+                .sort((a, b) => b.likes - a.likes)
+                .map(blog => 
+              <Blogs key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
+              )}
+            </ul>
         } />
       </Routes>
     </div>
