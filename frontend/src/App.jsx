@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useContext } from 'react'
 import {NotificationContext, UserContext} from './context'
 import { Routes, Route, Link, useNavigation, useMatch } from 'react-router-dom'
+import Users from './components/Users'
 import User from './components/User'
 
 const App = () => {
@@ -193,6 +194,9 @@ const App = () => {
         </div>
         } />
         <Route path = "/user" element = {
+          <Users />
+        } />
+        <Route path = "/user/:id" element = {
           <User />
         } />
       </Routes>

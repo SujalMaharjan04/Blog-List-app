@@ -1,34 +1,33 @@
-import { QueryClient, useQuery } from "@tanstack/react-query";
 import userService from '../services/user'
+import { useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
-const User = ()  => {
+const User = () => {
+    const {id}= useParams()
 
     const getUser = useQuery({
-        queryKey: ['user'],
-        queryFn: userService.getUser
+        queryKey: ['user', id],
+        queryFn: () => userService.getUserById(id)
     })
 
-    const users = getUser.data ?? []
+    if (getUser.isLoading) {
+        return (<h2>Loading....</h2>)
+    }
+
+    const user = getUser.data
+    
 
     return (
         <div>
-            <h2>Users</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <td></td>
-                        <td><strong>blogs created</strong></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map(user => (
-                        <tr key = {user.id}>
-                            <td>{user.username}</td>
-                            <td>{user.blogs.length}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <h2>{user.username}</h2>
+            <h3>added blogs</h3>
+            <ul>
+                {user.blogs.map(blog => (
+                    <li key = {blog.id}>
+                        {blog.title}
+                    </li>
+                ))}
+            </ul>
         </div>
     )
 }
