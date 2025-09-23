@@ -17,6 +17,29 @@ blogRouter.get('/:id', async(req, res) => {
     res.json(result)
 })
 
+blogRouter.get('/:id/comments', async(req, res) => {
+    const result = await blog.findById(req.params.id)
+    res.json(result.comments ?? [])
+})
+
+blogRouter.post('/:id/comments', async(req,res) => {
+    const result = await blog.findById(req.params.id)
+    if (!result) {
+        res.status(404).json({error: 'Blog not Found'})
+    }
+    const comment = req.body.comment
+
+    if (!(typeof comment === 'string')) {
+        res.status(400).json({error: 'Invalid comment'})
+    }
+    result.comments.push(comment)
+
+    const saved = await result.save()
+    res.status(200).json(saved.comments)
+
+
+})
+
 blogRouter.post('/', userExtractor, async(req, res) => {
     const result = req.body
 

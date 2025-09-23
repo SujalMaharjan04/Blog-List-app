@@ -7,7 +7,6 @@ const BlogForm = ({createBlog}) => {
 
     const handleBlog = (event) => {
         event.preventDefault()
-        console.log('Handle blog called', {title, author, url})
         createBlog({
           title: title,
           author: author,
