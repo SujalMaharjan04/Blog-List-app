@@ -17,3 +17,8 @@
   padding: 10px;
   margin-bottom: 15px;
 }
+
+table, th, td {
+  text-align: center;
+  width: 200px;
+}

@@ -8,6 +8,8 @@ import BlogForm from './components/BlogForm'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useContext } from 'react'
 import {NotificationContext, UserContext} from './context'
+import { Routes, Route, Link, useNavigation, useMatch } from 'react-router-dom'
+import User from './components/User'
 
 const App = () => {
 
@@ -79,6 +81,7 @@ const App = () => {
 
   const blogs = result.data ?? []
 
+  //Checking if user has logged out or not
   useEffect(() => {
     const loggedJSON = window.localStorage.getItem('loginBlogAppUser')
     if (loggedJSON) {
@@ -111,6 +114,7 @@ const App = () => {
     }
   }
 
+  //Function to handle login
   const handleLogin = async (event) => {
     event.preventDefault()
     try{
@@ -132,12 +136,14 @@ const App = () => {
     }
   } 
 
+  //Function to handle Logout
   const handleLogout = () => {
     window.localStorage.removeItem('loginBlogAppUser')
     setUser(null)
     notify( 'Logout successful',  'success')
   }
 
+  //Function to Handle new Blog
   const handleBlog = async (newObject) => {
     try {
       newBlog.mutate(newObject)
@@ -150,6 +156,8 @@ const App = () => {
     }
   }
 
+  
+
 
 
   return (
@@ -160,24 +168,34 @@ const App = () => {
       {user === null
         ? <Togglable buttonLabel = "login" >
             <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} /> 
-          </Togglable> : 
-      <div>
-        {user.username} Logged In <button type = "submit" onClick={handleLogout} >Log Out</button>
-        <Togglable buttonLabel = 'Add Blog'>
-          <BlogForm 
-            createBlog={handleBlog}
-            updateBlog = {update} />
-        </Togglable>
-        {result.isLoading && <div>Loading....</div>}
-        <ul>
-          {blogs
-            .slice()
-            .sort((a, b) => b.likes - a.likes)
-            .map(blog => 
-          <Blog key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
-          )}
-        </ul>
-      </div>}
+          </Togglable> : <div>{user.username} Logged In <button type = "submit" onClick={handleLogout} >Log Out</button></div>
+      }
+      
+      {/* Different Routes */}
+      <Routes>
+        <Route path = "/" element = {
+          <div>
+        
+            <Togglable buttonLabel = 'Add Blog'>
+              <BlogForm 
+                createBlog={handleBlog}
+                updateBlog = {update} />
+            </Togglable>
+            {result.isLoading && <div>Loading....</div>}
+            <ul>
+              {blogs
+                .slice()
+                .sort((a, b) => b.likes - a.likes)
+                .map(blog => 
+              <Blog key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
+              )}
+            </ul>
+        </div>
+        } />
+        <Route path = "/user" element = {
+          <User />
+        } />
+      </Routes>
     </div>
   )
 }
