@@ -29,7 +29,7 @@ blogRouter.post('/:id/comments', async(req,res) => {
     }
     const comment = req.body.comment
 
-    if (!(typeof comment === 'string')) {
+    if (!(typeof comment === 'string' && comment !== "")) {
         res.status(400).json({error: 'Invalid comment'})
     }
     result.comments.push(comment)

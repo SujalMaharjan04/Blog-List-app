@@ -1,21 +1,22 @@
 import PropTypes from 'prop-types'
+import {Form, Button} from 'react-bootstrap'
 
 const LoginForm = ({username, password, handleLogin, handleUsernameChange, handlePasswordChange}) => {
     return (
       <div>
-        <form onSubmit={handleLogin}>
-          <div>
-            Username:
-            <input type = "text" name = "Username" value = {username} onChange={handleUsernameChange} />
-          </div>
-          <div>
-            Password:
-            <input type = "password" name = "Password" value = {password} onChange={handlePasswordChange} />
-          </div>
-          <div>
-            <button type = "submit">Log In</button>
-          </div>
-        </form>
+        <Form onSubmit={handleLogin}>
+          <Form.Group>
+            <Form.Label>Username:</Form.Label>
+            <Form.Control type = "text" name = "Username" value = {username} onChange={handleUsernameChange} />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Password:</Form.Label>
+            <Form.Control type = "password" name = "Password" value = {password} onChange={handlePasswordChange} />
+          </Form.Group>
+          <Form.Group>
+            <Button type = "submit" className = "btn btn-success mt-2">Log In</Button>
+          </Form.Group>
+        </Form>
       </div>
     )
 }

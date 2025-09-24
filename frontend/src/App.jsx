@@ -8,10 +8,11 @@ import BlogForm from './components/BlogForm'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useContext } from 'react'
 import {NotificationContext, UserContext} from './context'
-import { Routes, Route, Link, useNavigation, useMatch } from 'react-router-dom'
+import { Routes, Route, Link, useNavigation, useMatch, Navigate } from 'react-router-dom'
 import Users from './components/Users'
 import User from './components/User'
 import Blog from './components/Blog'
+import { Alert, Nav, Navbar} from 'react-bootstrap'
 
 const App = () => {
 
@@ -158,75 +159,86 @@ const App = () => {
     }
   }
 
-  
-
-  const background = {
-    backgroundColor: "gray",
-    display: "flex",
-    alignItems: 'center',
-    gap: '1rem',
-    padding: '1rem'
-  }
-
-
 
   return (
     <div>
-      <h2>blogs</h2>
-      
-      {notification === null ? null : <h2 className = {notification.type}>{notification.text}</h2>}
-      <div style={background}>
-        <Link to = "/">Home</Link>
-        <Link to = "/blog">blogs</Link>
-        <Link to = '/user'>users</Link>
-        {user === null
-          ? <Togglable buttonLabel = "login" >
-              <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} /> 
-            </Togglable> : <div>{user.username} Logged In <button type = "submit" onClick={handleLogout} >Log Out</button></div>
-        }
+      <div>
+        <Navbar  expand = "lg" bg = "dark" variant = "dark" >
+          <Navbar.Toggle aria-controls = "responsive-navbar-nav" />
+            <Navbar.Collapse id = "responsive-navbar-nav">
+              <Nav className = "w-100 fs-5 fw-bold d-flex align-items-center justify-content-evenly">
+              <Nav.Link href = "#" as = {Link} to = "/">Home</Nav.Link>
+              <Nav.Link href = "#" as = {Link} to = "/blog">Blogs</Nav.Link>
+              <Nav.Link href = "#" as = {Link} to = "/user">Users</Nav.Link>
+              
+              
+                {user === null
+                ? <Nav.Link href = "#" as = {Link} to ="/login">Login </Nav.Link>
+                : <div>{user.username} Logged In <button type = "submit" onClick={handleLogout} className = "btn btn-danger fw-bold">Log Out</button></div>
+                }
+             
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
       </div>
-      
-      {/* Different Routes */}
-      <Routes>
-        <Route path = "/" element = {
-          <div>
+        <div className = "container">
+        <h2 className=' fw-bolder'>Blogs</h2>
         
-            <Togglable buttonLabel = 'Add Blog'>
-              <BlogForm 
-                createBlog={handleBlog}
-                updateBlog = {update} />
-            </Togglable>
-            {result.isLoading && <div>Loading....</div>}
+        {notification === null ? null : <Alert variant = {notification.type}>{notification.text}</Alert>}
+      
+        
+        {/* Different Routes */}
+        <Routes>
+          <Route path = "/" element = {
+            <div>
+              {user === null
+              ? null
+              : <Togglable buttonLabel = 'Add Blog' >
+                  <BlogForm 
+                    createBlog={handleBlog}
+                    updateBlog = {update} />
+                </Togglable>}
+              
+              {result.isLoading && <div>Loading....</div>}
+              <ul>
+                {blogs
+                  .slice()
+                  .sort((a, b) => b.likes - a.likes)
+                  .map(blog => 
+                <Blogs key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
+                )}
+              </ul>
+          </div>
+          } />
+          <Route path = '/login' element = {
+              <>
+              {user === null 
+              ?  <LoginForm username = {username} password = {password} handleLogin = {handleLogin} handleUsernameChange={({target}) => setUsername(target.value)} handlePasswordChange={({target}) => setPassword(target.value)} />  
+              :  <Navigate replace to = "/" />
+              } 
+              </>
+          } />
+          <Route path = "/user" element = {
+            <Users />
+          } />
+          <Route path = "/user/:id" element = {
+            <User />
+          } />
+          <Route path = "/blog/:id" element = {
+            <Blog updateBlog = {update} deleteBlog = {deleteBlog}/>
+          } />
+          <Route path = "/blog" element = {
             <ul>
-              {blogs
-                .slice()
-                .sort((a, b) => b.likes - a.likes)
-                .map(blog => 
-              <Blogs key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
-              )}
-            </ul>
-        </div>
-        } />
-        <Route path = "/user" element = {
-          <Users />
-        } />
-        <Route path = "/user/:id" element = {
-          <User />
-        } />
-        <Route path = "/blog/:id" element = {
-          <Blog updateBlog = {update} deleteBlog = {deleteBlog}/>
-        } />
-        <Route path = "/blog" element = {
-          <ul>
-              {blogs
-                .slice()
-                .sort((a, b) => b.likes - a.likes)
-                .map(blog => 
-              <Blogs key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
-              )}
-            </ul>
-        } />
-      </Routes>
+                {blogs
+                  .slice()
+                  .sort((a, b) => b.likes - a.likes)
+                  .map(blog => 
+                <Blogs key = {blog.id} blog = {blog} updateBlog = {update} deleteBlog = {deleteBlog} user = {user}/>
+                )}
+              </ul>
+          } />
+        </Routes>
+      </div>
     </div>
   )
 }

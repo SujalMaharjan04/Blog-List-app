@@ -60,6 +60,23 @@ const Blog = ({updateBlog}) => {
     
     
     const handleComment = (id, newComment) => {
+        if (!newComment) {
+            dispatch({
+                type: 'SET_NOTIFICATION',
+                payload: {
+                    text: 'No Comment Present',
+                    type: 'error'
+                }
+            })
+
+            setTimeout(() => {
+                dispatch({
+                    type: 'CLEAR_NOTIFICATION'
+                })
+            }, 5000)
+
+            return null
+        }
         uploadComment.mutate({id: blog.id, newComment})
         setComments('')
         

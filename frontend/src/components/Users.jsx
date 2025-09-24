@@ -1,6 +1,7 @@
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import userService from '../services/user'
 import { Link } from "react-router-dom";
+import { Table } from "react-bootstrap";
 
 const Users = ()  => {
 
@@ -13,23 +14,23 @@ const Users = ()  => {
 
     return (
         <div>
-            <h2>Users</h2>
-            <table>
+            <h2 className = "fs-1 fw-bold">Users</h2>
+            <Table striped className = "text-center">
                 <thead>
                     <tr>
                         <td></td>
-                        <td><strong>blogs created</strong></td>
+                        <td className = "fs-5"><strong>blogs created</strong></td>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className = "fs-5">
                     {users.map(user => (
                         <tr key = {user.id}>
-                            <td><Link to = {`/user/${user.id}`}>{user.username}</Link></td>
+                            <td><Link to = {`/user/${user.id}`} className = "text-decoration-none text-black">{user.username}</Link></td>
                             <td>{user.blogs.length}</td>
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </Table>
         </div>
     )
 }
